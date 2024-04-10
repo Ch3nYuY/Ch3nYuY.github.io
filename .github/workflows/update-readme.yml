@@ -1,0 +1,27 @@
+name: Update README
+
+on:
+  push:
+    branches:
+      - main  # 或者是你使用的默认分支名
+  schedule:
+    - cron: '0 0 * * *'  # 每天凌晨运行
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Generate file links
+      run: |
+        echo "# Files in 'file' directory" > README.md
+        echo "" >> README.md
+        find file -type f | sed 's/^file\//\* \[/;s/$/\](\0)/' >> README.md
+    - name: Commit and push if changed
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git add README.md
+        git commit -m "Update README with links to files in 'file' directory" || exit 0
+        git push
+
