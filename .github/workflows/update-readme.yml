@@ -4,7 +4,7 @@
     git config --global user.name "GitHub Action"
     git add README.md
     git commit -m "Update README with links to files in 'file' directory" || exit 0
-    git push --set-upstream origin HEAD:main --force
+    git -c http.extraHeader="AUTHORIZATION: basic ${GITHUB_TOKEN}" push --set-upstream origin HEAD:main --force
   env:
     GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
