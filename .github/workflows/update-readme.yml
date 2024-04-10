@@ -9,30 +9,40 @@
     GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
 
-name: Update README
+name: Auto Update README
 
 on:
   push:
     branches:
-      - main  # 或者是你使用的默认分支名
-  schedule:
-    - cron: '0 0 * * *'  # 每天凌晨运行
+      - main
+    paths:
+      - 'files/**'
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Generate file links
-      run: |
-        echo "# Files in 'file' directory" > README.md
-        echo "" >> README.md
-        find file -type f | sed 's/^file\//\* \[/;s/$/\](\0)/' >> README.md
-    - name: Commit and push if changed
-      run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
-        git add README.md
-        git commit -m "Update README with links to files in 'file' directory" || exit 0
-        git push
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 确保完整克隆仓库以便检测变化
+      - name: Generate file links and update README
+        run: |
+          # 更新 README.md 文件的逻辑
+          echo "# Files in 'files' directory" > README.md
+          echo "" >> README.md
+          find files -type f | sed 's/^files\//\* \[/;s/$/\](\0)/' >> README.md
+      - name: Commit and push if changed
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No changes in README.md"
+          else
+            git commit -m "Auto-update README.md with links to files in 'files' directory"
+            git push
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
